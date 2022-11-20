@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+  web:
+    build:
+      context: ../../
+      dockerfile: docker/development/Dockerfile
+    ports:
+      - "80:3000"
+    hostname: web
+    networks:
+      sigh:
+        aliases:
+          - web
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./minio_storage:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BROWSER_REDIRECT_URL: http://web:80/minio
+    command: server --console-address ":9001" /data
+    hostname: minio
+    networks:
+      sigh:
+        aliases:
+          - minio
+
+volumes:
+  minio_storage: {}
+
+networks:
+  sigh:
