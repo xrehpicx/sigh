@@ -3,6 +3,7 @@ import { MapItemType, WelcomePageProps } from "components/types";
 import { getDocsStruct, getDoc } from "lib/minio";
 import { BucketItem } from "minio";
 import { GetServerSideProps } from "next";
+
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
@@ -15,30 +16,35 @@ export const getServerSideProps: GetServerSideProps = async function (context) {
   const query = context.query as {
     service: string[];
   };
-
   const SerivceName = query.service[0];
-  console.log(query.service)
-  if(query.service[(query.service.length - 1)].includes("."))  {
-    query.service = query.service.slice(0, - 1);
-    console.log(query.service)
-  }
-  const FilePath = query.service.length > 1 ? `/${query.service.slice(1, query.service.length + 1).join('/')}/`:''
-  const DocStruct: BucketItem[] | null = await getDocsStruct(SerivceName, FilePath);
+  const FilePath = query.service.length > 1 ? `${query.service.slice(1, query.service.length + 1).join('/')}` : ''
+  const VersionPath = `/${query.service[1]}/`
+  const DocStruct: BucketItem[] | null = await getDocsStruct(SerivceName, VersionPath);
   const promises = DocStruct
     ? DocStruct.map(async (item) => {
-        const mapItem: MapItemType = [
-          item.name,
-          {
-            docString: await getDoc(SerivceName, item.name),
-            lastModified: item.lastModified.toISOString(),
-          },
-        ];
-        return mapItem;
-      })
+      console.log(item)
+      const mapItem: MapItemType = [
+        item.name,
+        {
+          docString: await getDoc(SerivceName, item.name),
+          lastModified: item.lastModified.toISOString(),
+        },
+      ];
+      return mapItem;
+    })
     : null;
 
-  const DocMapArr = promises ? await Promise.all(promises) : null;
+  console.log("cehcking")
 
+  const fileFound = !!DocStruct?.find((item) => (item.name === FilePath || item.name === FilePath + ".md") || item.name.includes(FilePath));
+  console.log(fileFound)
+
+
+  if (query.service[(query.service.length - 1)].includes(".")) {
+    query.service = query.service.slice(0, - 1);
+  }
+
+  const DocMapArr = promises ? await Promise.all(promises) : null;
   const SerivceDocVersion = query.service[1];
 
   const props: IDocData = { DocMapArr };
@@ -61,17 +67,21 @@ export default function Doc({ DocMapArr }: IDocData) {
     );
     const homePath = Array.from(DocMap.keys()).find((pathString) =>
       pathString.toLowerCase().endsWith("/readme.md")
+
     );
 
     function getHomeData() {
       return homePath ? DocMap.get(homePath) : null;
-    }
-
+    };
+    function getPathExists() {
+      console.log(DocMap)
+      return "hihih"
+    };
     return {
       serviceName,
       DocMap,
       getHomeData,
-      
+      getPathExists,
       faviconUrl: favicon
         ? `http://${window.location.host}/api/static/${serviceName}/${favicon}`
         : favicon,
@@ -106,9 +116,9 @@ export default function Doc({ DocMapArr }: IDocData) {
                   <li {...props} className="list-disc ml-4" />
                 ),
               }}
-              //need 404 page 
+            //need 404 page 
             >
-              {docData.getHomeData() !=null ? docData.getHomeData()!.docString : "No such page Exists!!"}
+              {docData.getHomeData() != null ? docData.getHomeData()!.docString : "docData.getPathExists()!.do"}
             </ReactMarkdown>
 
             <RightDocNav />
