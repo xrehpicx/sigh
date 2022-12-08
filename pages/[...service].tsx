@@ -19,54 +19,64 @@ export const getServerSideProps: GetServerSideProps = async function (context) {
     service: string[];
   };
   const SerivceName = query.service[0];
-  console.log(query.service);
-  if (query.service[query.service.length - 1].includes(".")) {
-    query.service = query.service.slice(0, -1);
-    console.log(query.service);
-  }
+  const Version = query.service[1];
+  console.log(query.service, Version);
+  // if (query.service[query.service.length - 1].includes(".") && fileFound) {
+  //   query.service = query.service.slice(0, -1);
+  //   console.log(query.service);
+  // }
+
   const FilePath =
     query.service.length > 1
-      ? `/${query.service.slice(1, query.service.length + 1).join("/")}/`
+      ? `${query.service.slice(1, query.service.length + 1).join("/")}`
       : "";
   const DocStruct: BucketItem[] | null = await getDocsStruct(
     SerivceName,
-    FilePath
+    `/${Version}/`
   );
-  const promises = DocStruct
-    ? DocStruct.map(async (item) => {
-        console.log(item);
-        const mapItem: MapItemType = [
-          item.name,
-          {
-            docString: await getDoc(SerivceName, item.name),
-            lastModified: item.lastModified.toISOString(),
-          },
-        ];
-        return mapItem;
-      })
-    : null;
+
 
   console.log("cehcking");
 
   const fileFound = !!DocStruct?.find(
-    (item) =>
-      item.name === FilePath ||
-      item.name === FilePath + ".md" ||
-      item.name.includes(FilePath)
+    (item) => item.name === FilePath ||
+      item.name === FilePath + ".md"
   );
-  console.log(fileFound);
+  const folderFound = !fileFound && !!DocStruct?.find(
+    (item) => item.name === FilePath ||
+      item.name.includes(FilePath + '/')
+  );
 
-  if (query.service[query.service.length - 1].includes(".")) {
-    query.service = query.service.slice(0, -1);
-  }
+  console.log(FilePath, fileFound, folderFound)
+  const promises = DocStruct
+    ? DocStruct.map(async (item) => {
+      // console.log(item);
+      const mapItem: MapItemType = [
+        item.name,
+        {
+          docString: await getDoc(SerivceName, item.name),
+          lastModified: item.lastModified.toISOString(),
+        },
+      ];
+      return mapItem;
+    })
+    : null;
+
+  // if (query.service[query.service.length - 1].includes(".") || fileFound) {
+  //   query.service = query.service.slice(0, -1);
+  // }
 
   const DocMapArr = promises ? await Promise.all(promises) : null;
+
   const SerivceDocVersion = query.service[1];
 
-  const props: IDocData = { DocMapArr };
+  const props: IDocData = { DocMapArr, };
 
   return {
     props,
+    redirect: !(fileFound || folderFound) ? {
+      destination: `/404`
+    } : undefined
   };
 };
 
@@ -142,7 +152,7 @@ export default function Doc({ DocMapArr }: IDocData) {
                     <li {...props} className="list-disc ml-4" />
                   ),
                 }}
-                //need 404 page
+              //need 404 page
               >
                 {docData.getHomeData() != null
                   ? docData.getHomeData()!.docString
