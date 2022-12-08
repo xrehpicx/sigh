@@ -1,8 +1,10 @@
 import "../styles/globals.css";
+import "../styles/prism.css";
 // import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import type { AppProps } from "next/app";
 // import { ThemeProvider } from "next-themes";
+
 
 const ThemeProvider = dynamic(
   async () => (await import("next-themes")).ThemeProvider,

@@ -86,6 +86,7 @@ interface IServicePageContext {
   serviceName: string;
   DocMap: Map<string, DocData>;
   getHomeData: () => DocData | null | undefined;
+  getPageData: () => DocData | null | undefined;
   faviconUrl: string | undefined;
 }
 
@@ -100,6 +101,11 @@ export default function Doc({ DocMapArr }: IDocData) {
   const docData = useMemo(() => {
     const serviceName = query.service[0];
     const DocMap = new Map(DocMapArr);
+
+    const pageDataPath = Array.from(DocMap.keys()).find((p) =>
+      p.includes(query.service.slice(1).join("/"))
+    );
+
     const favicon = Array.from(DocMap.keys()).find((pathString) =>
       pathString.endsWith("/favicon.ico")
     );
@@ -110,15 +116,15 @@ export default function Doc({ DocMapArr }: IDocData) {
     function getHomeData() {
       return homePath ? DocMap.get(homePath) : null;
     }
-    function getPathExists() {
-      console.log(DocMap);
-      return "hihih";
+    function getPageData() {
+      return pageDataPath ? DocMap.get(pageDataPath) : getHomeData();
     }
+
     return {
       serviceName,
       DocMap,
       getHomeData,
-
+      getPageData,
       faviconUrl: favicon
         ? `http://${window.location.host}/api/static/${serviceName}/${favicon}`
         : favicon,
@@ -143,9 +149,9 @@ export default function Doc({ DocMapArr }: IDocData) {
                 components={MarkdownComponents}
                 //need 404 page
               >
-                {docData.getHomeData() != null
-                  ? docData.getHomeData()!.docString
-                  : "No such page Exists!!"}
+                {docData.getPageData() != null
+                  ? docData.getPageData()!.docString
+                  : "No page data available"}
               </ReactMarkdown>
 
               <RightDocNav />
@@ -163,14 +169,11 @@ interface NavTreeNode extends TreeNode {
 }
 
 function DocNav() {
-  const { DocMap, serviceName } = useServiceData();
-  console.log(DocMap);
+  const { DocMap } = useServiceData();
 
   const navData = useMemo(() => {
     return Array.from(DocMap.keys()).filter((path) => path.includes(".md"));
   }, [DocMap]);
-
-  console.log(linktree(navData)[0].children);
 
   return (
     <nav className="lg:text-sm lg:leading-6 relative">
@@ -186,9 +189,7 @@ function DocNav() {
 
 function RightDocNav() {
   return (
-    <div className="fixed z-20 top-[3.8125rem] bottom-0 right-[max(0px,calc(50%-45rem))] w-[19.5rem] py-10 overflow-y-auto hidden xl:block">
-      <h1 className="text-primary-50">Test</h1>
-    </div>
+    <div className="fixed z-20 top-[3.8125rem] bottom-0 right-[max(0px,calc(50%-45rem))] w-[19.5rem] py-10 overflow-y-auto hidden xl:block"></div>
   );
 }
 
@@ -203,22 +204,33 @@ function NavSearch() {
 function ExpanableNavItem({ node }: { node: NavTreeNode }) {
   const title = !node.name.includes(".md") && node.children.length;
   const { serviceName } = useServiceData();
+  const router = useRouter();
+  const query = router.query as {
+    service: string[];
+  };
   const linkName = node.name.split(".md")[0].replaceAll("-", " ").toLowerCase();
   const titleName = node.name.replaceAll("-", " ");
-
+  const selected = query.service
+    .join("/")
+    ?.includes(node.path?.replaceAll(".md", "") || "");
+  console.log(node.path, query.service.join("/"));
   return (
     <div>
       {title ? (
         <Link
           href={`${serviceName}/${node.path}`.replace(".md", "")}
-          className="capitalize my-2 -ml-1 block"
+          className="capitalize my-2 -ml-1 block text-background-900 dark:text-background-50"
         >
           {titleName}
         </Link>
       ) : (
         <Link
           href={`${serviceName}/${node.path}`.replace(".md", "")}
-          className="capitalize block border-l pl-4 border-transparent border-primary-200 dark:border-background-800 hover:border-primary-400 dark:hover:border-background-400 text-background-700 hover:text-slate-900 dark:text-background-200 dark:hover:text-slate-300"
+          className={`capitalize block border-l pl-4 border-transparent border-primary-200 dark:border-background-800 hover:border-primary-400 dark:hover:border-background-600 text-primary-900 dark:text-background-100 hover:text-background-900 dark:hover:text-background-200 ${
+            selected
+              ? "dark:text-background-50 text-background-900 border-primary-400 dark:border-background-400"
+              : ""
+          }`}
         >
           {linkName}
         </Link>
