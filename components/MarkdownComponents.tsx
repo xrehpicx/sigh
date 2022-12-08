@@ -5,7 +5,7 @@ export const MarkdownComponents: Partial<
   Omit<NormalComponents, keyof SpecialComponents> & SpecialComponents
 > = {
   h1: (props) => (
-    <h1 className="inline-block text-3xl sm:text-3xl font-extrabold text-background-900 tracking-tight dark:text-slate-200">
+    <h1 className="inline-block text-4xl font-extrabold text-background-900 tracking-tight dark:text-slate-200">
       {props.children}
     </h1>
   ),

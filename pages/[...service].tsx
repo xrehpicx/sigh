@@ -9,6 +9,7 @@ import { useRouter } from "next/router";
 import { createContext, useContext, useMemo } from "react";
 import pathListToTree, { TreeNode } from "path-list-to-tree";
 import ReactMarkdown from "react-markdown";
+import { linktree } from "lib/util";
 
 interface IDocData {
   DocMapArr: MapItemType[] | null;
@@ -35,31 +36,30 @@ export const getServerSideProps: GetServerSideProps = async function (context) {
     `/${Version}/`
   );
 
-
   console.log("cehcking");
 
   const fileFound = !!DocStruct?.find(
-    (item) => item.name === FilePath ||
-      item.name === FilePath + ".md"
+    (item) => item.name === FilePath || item.name === FilePath + ".md"
   );
-  const folderFound = !fileFound && !!DocStruct?.find(
-    (item) => item.name === FilePath ||
-      item.name.includes(FilePath + '/')
-  );
+  const folderFound =
+    !fileFound &&
+    !!DocStruct?.find(
+      (item) => item.name === FilePath || item.name.includes(FilePath + "/")
+    );
 
-  console.log(FilePath, fileFound, folderFound)
+  console.log(FilePath, fileFound, folderFound);
   const promises = DocStruct
     ? DocStruct.map(async (item) => {
-      // console.log(item);
-      const mapItem: MapItemType = [
-        item.name,
-        {
-          docString: await getDoc(SerivceName, item.name),
-          lastModified: item.lastModified.toISOString(),
-        },
-      ];
-      return mapItem;
-    })
+        // console.log(item);
+        const mapItem: MapItemType = [
+          item.name,
+          {
+            docString: await getDoc(SerivceName, item.name),
+            lastModified: item.lastModified.toISOString(),
+          },
+        ];
+        return mapItem;
+      })
     : null;
 
   // if (query.service[query.service.length - 1].includes(".") || fileFound) {
@@ -70,13 +70,15 @@ export const getServerSideProps: GetServerSideProps = async function (context) {
 
   const SerivceDocVersion = query.service[1];
 
-  const props: IDocData = { DocMapArr, };
+  const props: IDocData = { DocMapArr };
 
   return {
     props,
-    redirect: !(fileFound || folderFound) ? {
-      destination: `/404`
-    } : undefined
+    redirect: !(fileFound || folderFound)
+      ? {
+          destination: `/404`,
+        }
+      : undefined,
   };
 };
 
@@ -138,21 +140,8 @@ export default function Doc({ DocMapArr }: IDocData) {
             <div className="lg:pl-[19.5rem]">
               <ReactMarkdown
                 className="text-background-900 dark:text-primary-50 max-w-3xl mx-auto pt-10 xl:max-w-none xl:ml-0 xl:mr-[15.5rem] xl:pr-16"
-                components={{
-                  h1: ({ ...props }) => (
-                    <h1 {...props} className="text-6xl my-2" />
-                  ),
-                  h2: ({ ...props }) => (
-                    <h2 {...props} className="text-4xl my-2" />
-                  ),
-                  h3: ({ ...props }) => (
-                    <h3 {...props} className="text-2xl my-2" />
-                  ),
-                  li: ({ ...props }) => (
-                    <li {...props} className="list-disc ml-4" />
-                  ),
-                }}
-              //need 404 page
+                components={MarkdownComponents}
+                //need 404 page
               >
                 {docData.getHomeData() != null
                   ? docData.getHomeData()!.docString
@@ -168,6 +157,11 @@ export default function Doc({ DocMapArr }: IDocData) {
   );
 }
 
+interface NavTreeNode extends TreeNode {
+  path?: string;
+  children: NavTreeNode[];
+}
+
 function DocNav() {
   const { DocMap, serviceName } = useServiceData();
   console.log(DocMap);
@@ -176,26 +170,16 @@ function DocNav() {
     return Array.from(DocMap.keys()).filter((path) => path.includes(".md"));
   }, [DocMap]);
 
-  console.log(pathListToTree(navData)[0].children);
+  console.log(linktree(navData)[0].children);
 
   return (
     <nav className="lg:text-sm lg:leading-6 relative">
       <NavSearch />
-      {navData.map((path) => (
-        <div
-          key={path}
-          className="space-y-6 lg:space-y-2 border-l border-background-100 dark:border-background-800"
-        >
-          <Link
-            href={`${serviceName}/${path}`}
-            className="capitalize block border-l pl-4 -ml-px border-transparent hover:border-slate-400 dark:hover:border-slate-500 text-background-700 hover:text-slate-900 dark:text-background-200 dark:hover:text-slate-300"
-          >
-            {path.toLowerCase().endsWith("readme.md")
-              ? "Home"
-              : path.split("/")[1].split(".md")[0].replaceAll("-", " ")}
-          </Link>
-        </div>
-      ))}
+      <div className="flex flex-col">
+        {linktree(navData)[0].children.map((child) => (
+          <ExpanableNavItem key={child.name} node={child} />
+        ))}
+      </div>
     </nav>
   );
 }
@@ -216,10 +200,38 @@ function NavSearch() {
   );
 }
 
-function ExpanableNavItem({ node }: { node: TreeNode }) {
+function ExpanableNavItem({ node }: { node: NavTreeNode }) {
+  const title = !node.name.includes(".md") && node.children.length;
+  const { serviceName } = useServiceData();
+  const linkName = node.name.split(".md")[0].replaceAll("-", " ").toLowerCase();
+  const titleName = node.name.replaceAll("-", " ");
+
   return (
     <div>
-      <span>{node.name}</span>
+      {title ? (
+        <Link
+          href={`${serviceName}/${node.path}`.replace(".md", "")}
+          className="capitalize my-2 -ml-1 block"
+        >
+          {titleName}
+        </Link>
+      ) : (
+        <Link
+          href={`${serviceName}/${node.path}`.replace(".md", "")}
+          className="capitalize block border-l pl-4 border-transparent border-primary-200 dark:border-background-800 hover:border-primary-400 dark:hover:border-background-400 text-background-700 hover:text-slate-900 dark:text-background-200 dark:hover:text-slate-300"
+        >
+          {linkName}
+        </Link>
+      )}
+      <div>
+        {node.children.length
+          ? node.children.map((child) =>
+              !child.path?.toLowerCase().endsWith("readme.md") ? (
+                <ExpanableNavItem key={child.name} node={child} />
+              ) : null
+            )
+          : null}
+      </div>
     </div>
   );
 }
