@@ -19,35 +19,45 @@ export const getServerSideProps: GetServerSideProps = async function (context) {
     service: string[];
   };
   const SerivceName = query.service[0];
-  console.log(query.service)
-  if(query.service[(query.service.length - 1)].includes("."))  {
-    query.service = query.service.slice(0, - 1);
-    console.log(query.service)
+  console.log(query.service);
+  if (query.service[query.service.length - 1].includes(".")) {
+    query.service = query.service.slice(0, -1);
+    console.log(query.service);
   }
-  const FilePath = query.service.length > 1 ? `/${query.service.slice(1, query.service.length + 1).join('/')}/`:''
-  const DocStruct: BucketItem[] | null = await getDocsStruct(SerivceName, FilePath);
+  const FilePath =
+    query.service.length > 1
+      ? `/${query.service.slice(1, query.service.length + 1).join("/")}/`
+      : "";
+  const DocStruct: BucketItem[] | null = await getDocsStruct(
+    SerivceName,
+    FilePath
+  );
   const promises = DocStruct
     ? DocStruct.map(async (item) => {
-      console.log(item)
-      const mapItem: MapItemType = [
-        item.name,
-        {
-          docString: await getDoc(SerivceName, item.name),
-          lastModified: item.lastModified.toISOString(),
-        },
-      ];
-      return mapItem;
-    })
+        console.log(item);
+        const mapItem: MapItemType = [
+          item.name,
+          {
+            docString: await getDoc(SerivceName, item.name),
+            lastModified: item.lastModified.toISOString(),
+          },
+        ];
+        return mapItem;
+      })
     : null;
 
-  console.log("cehcking")
+  console.log("cehcking");
 
-  const fileFound = !!DocStruct?.find((item) => (item.name === FilePath || item.name === FilePath + ".md") || item.name.includes(FilePath));
-  console.log(fileFound)
+  const fileFound = !!DocStruct?.find(
+    (item) =>
+      item.name === FilePath ||
+      item.name === FilePath + ".md" ||
+      item.name.includes(FilePath)
+  );
+  console.log(fileFound);
 
-
-  if (query.service[(query.service.length - 1)].includes(".")) {
-    query.service = query.service.slice(0, - 1);
+  if (query.service[query.service.length - 1].includes(".")) {
+    query.service = query.service.slice(0, -1);
   }
 
   const DocMapArr = promises ? await Promise.all(promises) : null;
@@ -83,16 +93,15 @@ export default function Doc({ DocMapArr }: IDocData) {
     );
     const homePath = Array.from(DocMap.keys()).find((pathString) =>
       pathString.toLowerCase().endsWith("/readme.md")
-
     );
 
     function getHomeData() {
       return homePath ? DocMap.get(homePath) : null;
-    };
+    }
     function getPathExists() {
-      console.log(DocMap)
-      return "hihih"
-    };
+      console.log(DocMap);
+      return "hihih";
+    }
     return {
       serviceName,
       DocMap,
@@ -105,48 +114,53 @@ export default function Doc({ DocMapArr }: IDocData) {
   }, [DocMapArr, query.service]);
 
   return (
-    <main className="bg-white dark:bg-background-900 h-screen">
-      <HomeNav
-        serviceName={docData.serviceName}
-        faviconUrl={docData.faviconUrl}
-      />
-      <div>
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 md:px-8">
-          <div className="hidden lg:block fixed z-20 inset-0 top-[3.8125rem] left-[max(0px,calc(50%-45rem))] right-auto w-[19.5rem] pb-10 px-8 overflow-y-auto">
-            <DocNav />
-          </div>
-          <div className="lg:pl-[19.5rem]">
-            <ReactMarkdown
-              className="text-background-900 dark:text-primary-50 max-w-3xl mx-auto pt-10 xl:max-w-none xl:ml-0 xl:mr-[15.5rem] xl:pr-16"
-              components={{
-                h1: ({ ...props }) => (
-                  <h1 {...props} className="text-6xl my-2" />
-                ),
-                h2: ({ ...props }) => (
-                  <h2 {...props} className="text-4xl my-2" />
-                ),
-                h3: ({ ...props }) => (
-                  <h3 {...props} className="text-2xl my-2" />
-                ),
-                li: ({ ...props }) => (
-                  <li {...props} className="list-disc ml-4" />
-                ),
-              }}
-              //need 404 page 
-            >
-              {docData.getHomeData() !=null ? docData.getHomeData()!.docString : "No such page Exists!!"}
-            </ReactMarkdown>
+    <ServicePageContext.Provider value={docData}>
+      <main className="bg-white dark:bg-background-900 h-screen">
+        <HomeNav
+          serviceName={docData.serviceName}
+          faviconUrl={docData.faviconUrl}
+        />
+        <div>
+          <div className="max-w-8xl mx-auto px-4 sm:px-6 md:px-8">
+            <div className="hidden lg:block fixed z-20 inset-0 top-[3.8125rem] left-[max(0px,calc(50%-45rem))] right-auto w-[19.5rem] pb-10 px-8 overflow-y-auto">
+              <DocNav />
+            </div>
+            <div className="lg:pl-[19.5rem]">
+              <ReactMarkdown
+                className="text-background-900 dark:text-primary-50 max-w-3xl mx-auto pt-10 xl:max-w-none xl:ml-0 xl:mr-[15.5rem] xl:pr-16"
+                components={{
+                  h1: ({ ...props }) => (
+                    <h1 {...props} className="text-6xl my-2" />
+                  ),
+                  h2: ({ ...props }) => (
+                    <h2 {...props} className="text-4xl my-2" />
+                  ),
+                  h3: ({ ...props }) => (
+                    <h3 {...props} className="text-2xl my-2" />
+                  ),
+                  li: ({ ...props }) => (
+                    <li {...props} className="list-disc ml-4" />
+                  ),
+                }}
+                //need 404 page
+              >
+                {docData.getHomeData() != null
+                  ? docData.getHomeData()!.docString
+                  : "No such page Exists!!"}
+              </ReactMarkdown>
 
-            <RightDocNav />
+              <RightDocNav />
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </ServicePageContext.Provider>
   );
 }
 
 function DocNav() {
   const { DocMap, serviceName } = useServiceData();
+  console.log(DocMap);
 
   const navData = useMemo(() => {
     return Array.from(DocMap.keys()).filter((path) => path.includes(".md"));
