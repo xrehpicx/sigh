@@ -102,10 +102,6 @@ export default function Doc({ DocMapArr }: IDocData) {
                 h3: ({ ...props }) => (
                   <h3 {...props} className="text-2xl my-2" />
                 ),
-                // p: ({ ...props }) => <p {...props} className="text-sm my-2" />,
-                // ul: ({ ...props }) => (
-                //   <ul {...props} className="container ml-4" />
-                // ),
                 li: ({ ...props }) => (
                   <li {...props} className="list-disc ml-4" />
                 ),
