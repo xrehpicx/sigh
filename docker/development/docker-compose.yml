@@ -12,7 +12,7 @@ services:
         aliases:
           - web
   minio:
-    image: minio/minio
+    image: minio/minio:RELEASE.2022-11-08T05-27-07Z
     ports:
       - "9000:9000"
       - "9001:9001"

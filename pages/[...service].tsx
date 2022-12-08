@@ -17,7 +17,13 @@ export const getServerSideProps: GetServerSideProps = async function (context) {
   };
 
   const SerivceName = query.service[0];
-  const DocStruct: BucketItem[] | null = await getDocsStruct(SerivceName);
+  console.log(query.service)
+  if(query.service[(query.service.length - 1)].includes("."))  {
+    query.service = query.service.slice(0, - 1);
+    console.log(query.service)
+  }
+  const FilePath = query.service.length > 1 ? `/${query.service.slice(1, query.service.length + 1).join('/')}/`:''
+  const DocStruct: BucketItem[] | null = await getDocsStruct(SerivceName, FilePath);
   const promises = DocStruct
     ? DocStruct.map(async (item) => {
         const mapItem: MapItemType = [
@@ -65,6 +71,7 @@ export default function Doc({ DocMapArr }: IDocData) {
       serviceName,
       DocMap,
       getHomeData,
+      
       faviconUrl: favicon
         ? `http://${window.location.host}/api/static/${serviceName}/${favicon}`
         : favicon,
@@ -103,8 +110,9 @@ export default function Doc({ DocMapArr }: IDocData) {
                   <li {...props} className="list-disc ml-4" />
                 ),
               }}
+              //need 404 page 
             >
-              {docData.getHomeData()!.docString || ""}
+              {docData.getHomeData() !=null ? docData.getHomeData()!.docString : "No such page Exists!!"}
             </ReactMarkdown>
 
             <RightDocNav />
