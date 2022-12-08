@@ -11,7 +11,10 @@ const nextConfig = {
       beforeFiles: [
         {
           source: "/minio/:path*",
-          destination: "http://minio:9001/:path*",
+          destination:
+            process.env.NODE_ENV === "development"
+              ? "http://localhost:9001/:path*"
+              : "http://minio:9001/:path*",
         },
       ],
     };

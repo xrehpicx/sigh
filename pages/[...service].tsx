@@ -77,30 +77,38 @@ export default function Doc({ DocMapArr }: IDocData) {
         serviceName={docData.serviceName}
         faviconUrl={docData.faviconUrl}
       />
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 md:px-8">
-        <div className="hidden lg:block fixed z-20 inset-0 top-[3.8125rem] left-[max(0px,calc(50%-45rem))] right-auto w-[19.5rem] pb-10 px-8 overflow-y-auto">
-          <DocNav />
-        </div>
-        <div className="lg:pl-[19.5rem]">
-          <ReactMarkdown
-            className="text-background-900 dark:text-primary-50 max-w-3xl mx-auto pt-10 xl:max-w-none xl:ml-0 xl:mr-[15.5rem] xl:pr-16"
-            components={{
-              h1: ({ ...props }) => <h1 {...props} className="text-6xl my-2" />,
-              h2: ({ ...props }) => <h2 {...props} className="text-4xl my-2" />,
-              h3: ({ ...props }) => <h3 {...props} className="text-2xl my-2" />,
-              // p: ({ ...props }) => <p {...props} className="text-sm my-2" />,
-              // ul: ({ ...props }) => (
-              //   <ul {...props} className="container ml-4" />
-              // ),
-              li: ({ ...props }) => (
-                <li {...props} className="list-disc ml-4" />
-              ),
-            }}
-          >
-            {docData.getHomeData()!.docString || ""}
-          </ReactMarkdown>
+      <div>
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 md:px-8">
+          <div className="hidden lg:block fixed z-20 inset-0 top-[3.8125rem] left-[max(0px,calc(50%-45rem))] right-auto w-[19.5rem] pb-10 px-8 overflow-y-auto">
+            <DocNav />
+          </div>
+          <div className="lg:pl-[19.5rem]">
+            <ReactMarkdown
+              className="text-background-900 dark:text-primary-50 max-w-3xl mx-auto pt-10 xl:max-w-none xl:ml-0 xl:mr-[15.5rem] xl:pr-16"
+              components={{
+                h1: ({ ...props }) => (
+                  <h1 {...props} className="text-6xl my-2" />
+                ),
+                h2: ({ ...props }) => (
+                  <h2 {...props} className="text-4xl my-2" />
+                ),
+                h3: ({ ...props }) => (
+                  <h3 {...props} className="text-2xl my-2" />
+                ),
+                // p: ({ ...props }) => <p {...props} className="text-sm my-2" />,
+                // ul: ({ ...props }) => (
+                //   <ul {...props} className="container ml-4" />
+                // ),
+                li: ({ ...props }) => (
+                  <li {...props} className="list-disc ml-4" />
+                ),
+              }}
+            >
+              {docData.getHomeData()!.docString || ""}
+            </ReactMarkdown>
 
-          <RightDocNav />
+            <RightDocNav />
+          </div>
         </div>
       </div>
     </main>
