@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import type { AppProps } from "next/app";
 import { GetServerSideProps, NextPageContext } from "next";
 import { createContext, useContext } from "react";
+import CMDK from "components/Cmdk";
 // import { ThemeProvider } from "next-themes";
 
 const ThemeProvider = dynamic(

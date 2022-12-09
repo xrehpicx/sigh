@@ -17,6 +17,8 @@ import ReactMarkdown from "react-markdown";
 import { linktree } from "lib/util";
 import { Footer } from "components/Footer";
 import { ServicePageContext, useServiceData } from "context/ServicePageContext";
+import CMDK from "components/Cmdk";
+import { JsonStructure } from "react-cmdk";
 
 interface IDocData {
   DocMapArr: MapItemType[] | null;
@@ -134,16 +136,25 @@ export default function Doc({ DocMapArr }: IDocData) {
     };
   }, [DocMapArr, query.service]);
 
+  const searchData = useMemo(() => {
+    const DocMap = new Map(DocMapArr);
+    const srcData: JsonStructure = [];
+    DocMap.forEach((val, key) => {
+      console.log(val, key);
+    });
+  }, [DocMapArr]);
+
   return (
     <ServicePageContext.Provider value={docData}>
-      <main className="bg-white dark:bg-background-900 min-h-screen flex flex-col bg-gradient-from-br bg-gradient-to-tl dark:from-background-900 dark:via-background-900 dark:to-background-800 from-background-50 via-primary-00 to-background-50">
+      {/* <CMDK searchData={} /> */}
+      <main className="relative bg-white dark:bg-background-900 min-h-screen flex flex-col bg-gradient-from-br bg-gradient-to-tl dark:from-background-900 dark:via-background-900 dark:to-background-800 from-background-50 via-primary-00 to-background-50">
         <HomeNav
           serviceName={docData.serviceName}
           faviconUrl={docData.faviconUrl}
         />
         <div>
           <div className="max-w-8xl mx-auto px-4 sm:px-6 md:px-8 flex-1">
-            <div className="hidden lg:block fixed z-20 inset-0 top-[3.8125rem] left-[max(0px,calc(50%-45rem))] right-auto w-[19.5rem] pb-10 px-8 overflow-y-auto">
+            <div className="hidden lg:block fixed z-0 inset-0 top-[3.8125rem] left-[max(0px,calc(50%-45rem))] right-auto w-[19.5rem] pb-10 px-8 overflow-y-auto">
               <DocNav />
             </div>
             <div className="lg:pl-[19.5rem]">
