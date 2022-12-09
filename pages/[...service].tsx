@@ -219,7 +219,7 @@ function ExpanableNavItem({ node }: { node: NavTreeNode }) {
       ) : (
         <Link
           href={`${serviceName}/${node.path}`.replace(".md", "")}
-          className={`capitalize block border-l pl-4 border-transparent border-primary-200 dark:border-background-800 hover:border-primary-400 dark:hover:border-background-600 text-primary-900 dark:text-background-100 hover:text-background-900 dark:hover:text-background-200 ${
+          className={`capitalize block border-l pl-4 border-transparent border-primary-200 dark:border-background-800 hover:border-primary-500 dark:hover:border-background-400 text-primary-900 dark:text-background-100 hover:text-background-900 dark:hover:text-background-200 ${
             selected
               ? "dark:text-background-50 text-background-900 border-primary-400 dark:border-background-400"
               : ""
