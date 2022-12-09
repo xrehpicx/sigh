@@ -36,7 +36,7 @@ export function HomeNav({
                 <img src={faviconUrl} alt="favicon" width={20} height={20} />
               ) : null}
               <h4 className="text-xl text-primary-600 dark:text-primary-200">
-                {serviceName || "😮‍💨 sigh.md"}
+                {serviceName || "sigh.md"}
               </h4>
             </div>
             <div className="flex items-center gap-4">
