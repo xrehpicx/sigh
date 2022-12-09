@@ -148,7 +148,7 @@ export default function Doc({ DocMapArr }: IDocData) {
             </div>
             <div className="lg:pl-[19.5rem]">
               <ReactMarkdown
-                className="text-background-900 dark:text-primary-50 max-w-3xl mx-auto pt-10 xl:max-w-none xl:ml-0 xl:mr-[15.5rem] xl:pr-16"
+                className="pb-20 text-background-900 dark:text-primary-50 max-w-3xl mx-auto pt-10 xl:max-w-none xl:ml-0 xl:mr-[15.5rem] xl:pr-16"
                 components={MarkdownComponents}
               >
                 {docData.getPageData() !== null
@@ -220,7 +220,7 @@ function ExpanableNavItem({ node }: { node: NavTreeNode }) {
   const selected = query.service
     .join("/")
     ?.includes(node.path?.replaceAll(".md", "") || "");
-  console.log(node.path, query.service.join("/"));
+
   return (
     <div>
       {title ? (

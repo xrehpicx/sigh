@@ -42,7 +42,7 @@ export default function Main({ services }: { services: BucketItemFromList[] }) {
 function Docs({ services }: { services: BucketItemFromList[] }) {
   const router = useRouter();
   return (
-    <div className={`grid grid-cols-2 gap-4 w-full`}>
+    <div className={`grid grid-cols-2 gap-4 w-full h-fit`}>
       {services.map((service) => (
         <div
           className="cursor-pointer h-fit mt-4 hover:drop-shadow-xl"

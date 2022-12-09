@@ -32,12 +32,10 @@ export const MarkdownComponents: Partial<
     </li>
   ),
   code: (props) => (
-    <code className="language-js text-sm">
-      {props.children}
-    </code>
+    <code className="language-js text-sm">{props.children}</code>
   ),
   pre: (props) => (
-    <pre className="language-js text-sm dark:bg-background-800 py-1 px-2">
+    <pre className="language-js text-sm dark:bg-transparent border-2 rounded-lg border-background-200/20 dark:border-primary-200/20 py-1 px-2">
       {props.children}
     </pre>
   ),

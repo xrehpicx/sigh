@@ -32,6 +32,10 @@ export async function getAllServices() {
     return await minioClient.listBuckets()
 }
 
+export function getAllBucketData(){
+    
+}
+
 export async function getHomeDoc() {
     // minioClient.get
     if (!(await minioClient.bucketExists("docs-home"))) {
