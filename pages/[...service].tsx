@@ -1,9 +1,14 @@
 import { HomeNav } from "components/HomeNav";
 import { MarkdownComponents } from "components/MarkdownComponents";
 import { DocData, MapItemType } from "components/types";
-import { getDocsStruct, getDoc } from "lib/minio";
+import {
+  getDocsStruct,
+  getDoc,
+  serviceExists,
+  fetchLatestVersion,
+} from "lib/minio";
 import { BucketItem } from "minio";
-import { GetServerSideProps } from "next";
+import { GetServerSideProps, Redirect } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { createContext, useContext, useMemo } from "react";
@@ -23,11 +28,20 @@ export const getServerSideProps: GetServerSideProps = async function (context) {
   };
   const SerivceName = query.service[0];
   const Version = query.service[1];
+  let redirect: Redirect | undefined;
   console.log(query.service, Version);
-  // if (query.service[query.service.length - 1].includes(".") && fileFound) {
-  //   query.service = query.service.slice(0, -1);
-  //   console.log(query.service);
-  // }
+
+  // only service name given
+  if (query.service.length === 1 && (await serviceExists(SerivceName))) {
+    const latestVersion = await fetchLatestVersion(SerivceName);
+    console.log(latestVersion);
+    if (latestVersion) {
+      redirect = {
+        destination: `/${SerivceName}/${latestVersion}/`,
+        permanent: false,
+      };
+    }
+  }
 
   const FilePath =
     query.service.length > 1
@@ -70,17 +84,14 @@ export const getServerSideProps: GetServerSideProps = async function (context) {
 
   const DocMapArr = promises ? await Promise.all(promises) : null;
 
-  const SerivceDocVersion = query.service[1];
+  // const SerivceDocVersion = query.service[1];
 
   const props: IDocData = { DocMapArr };
 
   return {
     props,
-    redirect: !(fileFound || folderFound)
-      ? {
-          destination: `/404`,
-        }
-      : undefined,
+    redirect,
+    notFound: redirect ? undefined : !(fileFound || folderFound),
   };
 };
 
@@ -125,7 +136,7 @@ export default function Doc({ DocMapArr }: IDocData) {
 
   return (
     <ServicePageContext.Provider value={docData}>
-      <main className="bg-white dark:bg-background-900 h-screen flex flex-col bg-gradient-from-br bg-gradient-to-tl dark:from-background-900 dark:via-background-900 dark:to-background-800 from-background-50 via-primary-00 to-background-50">
+      <main className="bg-white dark:bg-background-900 min-h-screen flex flex-col bg-gradient-from-br bg-gradient-to-tl dark:from-background-900 dark:via-background-900 dark:to-background-800 from-background-50 via-primary-00 to-background-50">
         <HomeNav
           serviceName={docData.serviceName}
           faviconUrl={docData.faviconUrl}
@@ -139,7 +150,6 @@ export default function Doc({ DocMapArr }: IDocData) {
               <ReactMarkdown
                 className="text-background-900 dark:text-primary-50 max-w-3xl mx-auto pt-10 xl:max-w-none xl:ml-0 xl:mr-[15.5rem] xl:pr-16"
                 components={MarkdownComponents}
-                //need 404 page
               >
                 {docData.getPageData() !== null
                   ? docData.getPageData()!.docString
@@ -172,9 +182,13 @@ function DocNav() {
     <nav className="lg:text-sm lg:leading-6 relative">
       <NavSearch />
       <div className="flex flex-col">
-        {linktree(navData)[0].children.map((child) => (
-          <ExpanableNavItem key={child.name} node={child} />
-        ))}
+        {linktree(navData)[0]
+          .children.sort(
+            (a, b) => a.path.split("/").length - b.path.split("/").length
+          )
+          .map((child) => (
+            <ExpanableNavItem key={child.name} node={child} />
+          ))}
       </div>
     </nav>
   );

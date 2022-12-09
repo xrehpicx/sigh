@@ -12,8 +12,24 @@ export const minioClient = new Minio.Client({
     secretKey: process.env.MINIO_SECRET
 });
 
+
+export async function fetchLatestVersion(bucketName: string) {
+    const doc = await getDocsStruct(bucketName)
+    const versions = (Array.from(new Set(doc?.map(file => file.name.split('/')[0]))))
+    return (versions
+        .filter((name) => !name.endsWith('.pre') && !name.includes('rc'))
+        .reduce((a, b) =>
+            0 < a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+                ? a
+                : b
+        ));
+}
+
 export async function serviceExists(bucketName: string) {
     return await minioClient.bucketExists(bucketName)
+}
+export async function getAllServices() {
+    return await minioClient.listBuckets()
 }
 
 export async function getHomeDoc() {

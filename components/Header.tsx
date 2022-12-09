@@ -44,7 +44,7 @@ export function HomeHeader() {
             hover:drop-shadow-lg
         `}
           onClick={(e) => {
-            router.push("/alldocs");
+            router.push("/sigh/v1");
           }}
         >
           <span>Docs</span> <OpenInNewRoundedIcon sx={{ fontSize: "1rem" }} />
