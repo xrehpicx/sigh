@@ -10,6 +10,8 @@ import { createContext, useContext, useMemo } from "react";
 import pathListToTree, { TreeNode } from "path-list-to-tree";
 import ReactMarkdown from "react-markdown";
 import { linktree } from "lib/util";
+import { Footer } from "components/Footer";
+import { ServicePageContext, useServiceData } from "context/ServicePageContext";
 
 interface IDocData {
   DocMapArr: MapItemType[] | null;
@@ -82,17 +84,6 @@ export const getServerSideProps: GetServerSideProps = async function (context) {
   };
 };
 
-interface IServicePageContext {
-  serviceName: string;
-  DocMap: Map<string, DocData>;
-  getHomeData: () => DocData | null | undefined;
-  getPageData: () => DocData | null | undefined;
-  faviconUrl: string | undefined;
-}
-
-const ServicePageContext = createContext({} as IServicePageContext);
-const useServiceData = () => useContext(ServicePageContext);
-
 export default function Doc({ DocMapArr }: IDocData) {
   const router = useRouter();
   const query = router.query as {
@@ -102,9 +93,9 @@ export default function Doc({ DocMapArr }: IDocData) {
     const serviceName = query.service[0];
     const DocMap = new Map(DocMapArr);
 
-    const pageDataPath = Array.from(DocMap.keys()).find((p) =>
-      p.includes(query.service.slice(1).join("/"))
-    );
+    const pageDataPath = Array.from(DocMap.keys())
+      .filter((path) => path.endsWith(".md"))
+      .find((p) => p.includes(query.service.slice(1).join("/")));
 
     const favicon = Array.from(DocMap.keys()).find((pathString) =>
       pathString.endsWith("/favicon.ico")
@@ -117,7 +108,8 @@ export default function Doc({ DocMapArr }: IDocData) {
       return homePath ? DocMap.get(homePath) : null;
     }
     function getPageData() {
-      return pageDataPath ? DocMap.get(pageDataPath) : getHomeData();
+      console.log(pageDataPath, DocMap);
+      return pageDataPath ? DocMap.get(pageDataPath) : null;
     }
 
     return {
@@ -133,13 +125,13 @@ export default function Doc({ DocMapArr }: IDocData) {
 
   return (
     <ServicePageContext.Provider value={docData}>
-      <main className="bg-white dark:bg-background-900 h-screen">
+      <main className="bg-white dark:bg-background-900 h-screen flex flex-col bg-gradient-from-br bg-gradient-to-tl dark:from-background-900 dark:via-background-900 dark:to-background-800 from-background-50 via-primary-00 to-background-50">
         <HomeNav
           serviceName={docData.serviceName}
           faviconUrl={docData.faviconUrl}
         />
         <div>
-          <div className="max-w-8xl mx-auto px-4 sm:px-6 md:px-8">
+          <div className="max-w-8xl mx-auto px-4 sm:px-6 md:px-8 flex-1">
             <div className="hidden lg:block fixed z-20 inset-0 top-[3.8125rem] left-[max(0px,calc(50%-45rem))] right-auto w-[19.5rem] pb-10 px-8 overflow-y-auto">
               <DocNav />
             </div>
@@ -149,7 +141,7 @@ export default function Doc({ DocMapArr }: IDocData) {
                 components={MarkdownComponents}
                 //need 404 page
               >
-                {docData.getPageData() != null
+                {docData.getPageData() !== null
                   ? docData.getPageData()!.docString
                   : "No page data available"}
               </ReactMarkdown>
@@ -158,6 +150,7 @@ export default function Doc({ DocMapArr }: IDocData) {
             </div>
           </div>
         </div>
+        <Footer />
       </main>
     </ServicePageContext.Provider>
   );
